@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color:palegoldenrod;
+    }
+    .calculator {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    .display {
+      background: #000;
+      color: #0f0;
+      font-size: 2rem;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: right;
+      margin-bottom: 10px;
+      min-width: 240px;
+    }
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 60px);
+      gap: 10px;
+    }
+    button {
+      padding: 20px;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 5px;
+      background: #444;
+      color: #fff;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #666;
+    }
+    button.operator { background:orange; }
+    button.equal { background: #388e3c; }
+    button.clear { background: #d32f2f; }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div id="display" class="display">0</div>
+    <div class="buttons">
+      <button class="clear">C</button>
+      <button class="operator">/</button>
+      <button class="operator">*</button>
+      <button class="operator">←</button>
+
+      <button>7</button>
+      <button>8</button>
+      <button>9</button>
+      <button class="operator">-</button>
+
+      <button>4</button>
+      <button>5</button>
+      <button>6</button>
+      <button class="operator">+</button>
+
+      <button>1</button>
+      <button>2</button>
+      <button>3</button>
+      <button class="equal">=</button>
+
+      <button>0</button>
+      <button>.</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const buttons = document.querySelectorAll('button');
+
+    let currentInput = '';
+    let resultDisplayed = false;
+
+    function updateDisplay(value) {
+      display.textContent = value || '0';
+    }
+
+    function clearInput() {
+      currentInput = '';
+      updateDisplay(currentInput);
+    }
+
+    function deleteLastChar() {
+      currentInput = currentInput.slice(0, -1);
+      updateDisplay(currentInput);
+    }
+
+    function appendInput(value) {
+      if (resultDisplayed && !isNaN(value)) {
+        currentInput = value;
+        resultDisplayed = false;
+      } else {
+        currentInput += value;
+      }
+      updateDisplay(currentInput);
+    }
+
+    function parseAndCalculate(expression) {
+      try {
+        // Optional: Replace multiple operators like "--" with "+"
+        expression = expression.replace(/--/g, '+');
+
+        const result = Function(`'use strict'; return (${expression})`)();
+        
+        if (result === Infinity || result === -Infinity || isNaN(result)) {
+          throw new Error("Math Error");
+        }
+
+        return result.toString();
+      } catch (e) {
+        return "Error";
+      }
+    }
+
+    function handleEqual() {
+      const result = parseAndCalculate(currentInput);
+      updateDisplay(result);
+      currentInput = result === "Error" ? '' : result;
+      resultDisplayed = true;
+    }
+
+    function handleKeyInput(e) {
+      const key = e.key;
+
+      if (!isNaN(key) || ['+', '-', '*', '/', '.'].includes(key)) {
+        appendInput(key);
+      } else if (key === 'Enter' || key === '=') {
+        handleEqual();
+      } else if (key === 'Backspace') {
+        deleteLastChar();
+      } else if (key.toLowerCase() === 'c') {
+        clearInput();
+      }
+    }
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const value = button.textContent;
+
+        switch (value) {
+          case 'C':
+            clearInput();
+            break;
+          case '←':
+            deleteLastChar();
+            break;
+          case '=':
+            handleEqual();
+            break;
+          default:
+            appendInput(value);
+        }
+      });
+    });
+
+    document.addEventListener('keydown', handleKeyInput);
+  </script>
+</body>
+</html>
